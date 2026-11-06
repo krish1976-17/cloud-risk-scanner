@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="A browser-based cloud configuration risk scanner for learning and security reviews.">
+  <title>CloudGuard | Misconfiguration Risk Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#top" aria-label="CloudGuard home"><span class="brand-mark">◈</span><span>cloud<span class="brand-light">guard</span></span></a>
+      <div class="workspace"><span class="workspace-icon">⌘</span><span><small>WORKSPACE</small><strong>Internship lab</strong></span><span class="chevron">⌄</span></div>
+      <div class="nav-label">OVERVIEW</div>
+      <nav aria-label="Main navigation">
+        <a class="nav-item active" href="#dashboard"><span>▦</span> Dashboard</a>
+        <a class="nav-item" href="#findings"><span>◎</span> Findings <span class="nav-count" id="nav-count">0</span></a>
+        <a class="nav-item" href="#scanner"><span>⌕</span> Configuration scan</a>
+      </nav>
+      <div class="sidebar-bottom"><div class="scan-status"><span class="pulse"></span><span><small>SCANNER STATUS</small><strong>Ready to scan</strong></span></div><div class="profile"><div class="avatar">CG</div><span><strong>CloudGuard</strong><small>Student edition</small></span><span class="more">···</span></div></div>
+    </aside>
+    <main id="top">
+      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <b>Security overview</b></div><div class="top-actions"><span class="local-pill"><i></i> Local scanner</span><button class="icon-button" aria-label="Help" title="About this demo">?</button></div></header>
+      <section class="content" id="dashboard">
+        <div class="intro"><div><div class="eyebrow"><span class="eyebrow-line"></span> CLOUD SECURITY POSTURE</div><h1>See your cloud <span>clearly.</span></h1><p class="subtitle">Spot risky configuration patterns before they become incidents.</p></div><button class="primary-button" id="top-scan"><span>＋</span> New scan</button></div>
+        <div class="notice" id="notice"><span class="notice-icon">i</span><span><strong>Learning project · sample data</strong> Cloud JSON is analyzed in this browser and is not uploaded. Web scans send the target URL to the local Python service and make read-only requests.</span><button id="dismiss-notice" aria-label="Dismiss notice">×</button></div>
+        <div class="section-heading"><div><h2>Security overview</h2><p id="scan-summary">Run a demo scan to explore the dashboard.</p></div><span class="scan-time" id="last-scan">NO SCAN YET</span></div>
+        <div class="metrics">
+          <article class="metric-card score-card"><div class="metric-top"><span>DEMO POSTURE SCORE</span><span class="metric-symbol" title="Educational estimate, not a standard">◉</span></div><div class="score-row"><strong id="score">—</strong><div class="score-ring"><span id="score-ring-text">—</span></div></div><div class="metric-foot"><span id="score-caption">Waiting for a scan</span><span class="muted">/ 100</span></div><div class="score-track"><i id="score-bar"></i></div></article>
+          <article class="metric-card"><div class="metric-top"><span>CRITICAL FINDINGS</span><span class="metric-symbol critical">✳</span></div><div class="metric-value" id="critical-count">—</div><div class="metric-foot"><span class="severity-dot red"></span><span id="critical-caption">Highest priority</span></div></article>
+          <article class="metric-card"><div class="metric-top"><span>HIGH RISK</span><span class="metric-symbol high">↗</span></div><div class="metric-value" id="high-count">—</div><div class="metric-foot"><span class="severity-dot orange"></span><span>Needs attention</span></div></article>
+          <article class="metric-card"><div class="metric-top"><span>RESOURCES SCANNED</span><span class="metric-symbol blue">⌘</span></div><div class="metric-value" id="resource-count">—</div><div class="metric-foot"><span id="resource-caption">JSON configuration items</span></div></article>
+        </div>
+        <div class="main-grid">
+          <section class="panel findings-panel" id="findings"><div class="panel-heading"><div><h2>Priority findings</h2><p>Configuration issues ranked by severity</p></div><button class="text-button" id="view-all">View all <span>→</span></button></div><div class="findings-list" id="findings-list"><div class="empty-state"><div class="empty-icon">⌕</div><strong>Your findings will appear here</strong><span>Run the sample scan or upload a JSON file.</span></div></div></section>
+          <section class="panel breakdown-panel"><div class="panel-heading"><div><h2>Risk breakdown</h2><p>Findings by severity</p></div><span class="donut-label" id="finding-total">0 total</span></div><div class="chart-wrap"><div class="donut" id="donut"><div class="donut-center"><strong id="donut-total">0</strong><span>findings</span></div></div><div class="legend"><div><i class="red-bg"></i><span>Critical</span><b id="legend-critical">0</b></div><div><i class="orange-bg"></i><span>High</span><b id="legend-high">0</b></div><div><i class="yellow-bg"></i><span>Medium</span><b id="legend-medium">0</b></div><div><i class="green-bg"></i><span>Low</span><b id="legend-low">0</b></div></div></div><div class="chart-note"><span>✦</span><span id="risk-note">Your risk distribution appears after scanning.</span></div></section>
+        </div>
+        <section class="panel scanner-panel" id="scanner"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SECURITY SCANNER</div><h2>Scan a configuration or web app</h2><p>Choose cloud JSON analysis or a passive web application scan.</p></div><span class="rule-badge">8 config rules · web checks</span></div>
+          <div class="scan-tabs"><button class="scan-tab active" data-pane="config-pane">Cloud config JSON</button><button class="scan-tab" data-pane="webscan-pane">Web application</button></div><div id="config-pane" class="scan-grid"><div class="input-column"><label for="config-input">RESOURCE CONFIGURATION <span>JSON</span></label><textarea id="config-input" spellcheck="false" aria-describedby="json-help" placeholder='[{ "type": "s3_bucket", "name": "example", "public_access": true }]'></textarea><div class="input-help" id="json-help">Expected: an array of resource objects with a <code>type</code>, <code>name</code>, and configuration properties.</div><div class="input-actions"><button class="secondary-button" id="sample-button">↻ Load sample data</button><label class="upload-button" for="file-input">↑ Upload JSON</label><input id="file-input" type="file" accept=".json,application/json" hidden></div></div><div class="scan-aside"><div class="scan-aside-icon">⌁</div><h3>Ready when you are</h3><p>Your configuration stays in this browser tab. The scanner checks common public access, encryption, logging, and network exposure settings.</p><button class="primary-button scan-button" id="run-scan"><span>⌕</span> Run security scan</button><div class="scan-feedback" id="scan-feedback" aria-live="polite"></div></div></div>
+          <details class="format-details"><summary>View example JSON format</summary><pre>[{
+  "type": "s3_bucket",
+  "name": "customer-uploads",
+  "public_access": false,
+  "encryption_enabled": true,
+  "logging_enabled": true
+}]</pre></details><div id="webscan-pane" class="webscan-pane" hidden><div class="webscan-form"><label for="target-url">APPLICATION URL</label><div class="url-row"><input id="target-url" type="url" placeholder="https://your-app.example" autocomplete="url"><button class="primary-button" id="web-scan-button"><span>⌕</span> Scan application</button></div><p>Enter an application you own or are authorized to assess. CloudGuard makes read-only GET requests and follows same-site links (up to 12 pages).</p><div class="webscan-status" id="webscan-status" aria-live="polite"></div></div><div class="webscan-note"><span class="scan-aside-icon">⌁</span><strong>Passive checks only</strong><span>Checks HTTPS, response headers, cookies, forms, mixed content, and common exposure signals. No login, payloads, or changes.</span></div><div id="page-list" class="page-list"></div></div>
+        </section>
+        <footer><span>CloudGuard <span class="footer-sep">·</span> Cloud Misconfiguration Detection &amp; Risk Scanner</span><span>Built for learning <span class="footer-sep">·</span> Local scanner</span></footer>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
+
+
+
