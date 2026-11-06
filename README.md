@@ -29,6 +29,8 @@ GitHub Pages can host the static dashboard and **Cloud config JSON** mode. The *
 
 To publish the static dashboard, push the files to your repository, then go to **Settings → Pages → Deploy from a branch**, select `main` and `/ (root)`, and save.
 
+The public site includes `robots.txt` and `sitemap.xml` to help search engines discover it. For Google, add the site as a URL-prefix property in [Google Search Console](https://search.google.com/search-console), verify ownership, and submit `https://krish1976-17.github.io/cloud-risk-scanner/sitemap.xml`. Search listings can take time and are not guaranteed.
+
 ## Cloud configuration scan
 
 Use the **Cloud config JSON** tab and paste or upload an array of resources. Each object needs a string `type`. Supported types: `s3_bucket`, `security_group`, `rds_instance`, `iam_user`, `iam_identity`, `cloudtrail`, and `ebs_volume`.

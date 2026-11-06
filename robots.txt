@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://krish1976-17.github.io/cloud-risk-scanner/sitemap.xml
