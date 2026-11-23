@@ -59,3 +59,13 @@ The web scan checks for HTTP instead of HTTPS, missing HSTS/CSP and related resp
 - `server.py` — local static file server and passive web scan endpoint.
 - `README.md` — setup and usage guide.
 - `LICENSE` — MIT License.
+
+
+## Run the tests
+
+The backend tests use Python's standard library. The cloud JSON validation tests use Node.js's built-in test runner; the app itself still runs without Node.js.
+
+```powershell
+python -m unittest discover -s tests -p "test_*.py"
+node --test tests/test_config_validation.js
+```
