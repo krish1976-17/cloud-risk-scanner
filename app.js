@@ -75,8 +75,27 @@ function renderFindings(findings, showAll = false) {
     return;
   }
   const visible = showAll ? findings : findings.slice(0, 4);
-  host.innerHTML = visible.map((finding) => `<article class="finding-row"><span class="severity-badge ${finding.severity.toLowerCase()}">${finding.severity}</span><div class="finding-copy"><strong>${escapeHTML(finding.title)}</strong><span>${escapeHTML(finding.resourceName)} <i>·</i> ${escapeHTML(finding.resourceType)}</span><small>${escapeHTML(finding.fix)}</small></div><span class="finding-id">${finding.id}</span></article>`).join("");
+  host.innerHTML = visible.map((finding) => `<article class="finding-row"><span class="severity-badge ${finding.severity.toLowerCase()}">${finding.severity}</span><div class="finding-copy"><strong>${escapeHTML(finding.title)}</strong><span>${escapeHTML(finding.resourceName)} <i>·</i> ${escapeHTML(finding.resourceType)}</span><small>${escapeHTML(finding.fix)}</small><button class="secondary-button copy-finding" type="button" aria-label="Copy ${escapeHTML(finding.title)} finding">Copy</button><span class="copy-finding-status" role="status" aria-live="polite"></span></div><span class="finding-id">${finding.id}</span></article>`).join("");
 }
+
+$("#findings-list").addEventListener("click", async (event) => {
+  const button = event.target.closest(".copy-finding");
+  if (!button) return;
+  const row = button.closest(".finding-row");
+  const status = row.querySelector(".copy-finding-status");
+  const lines = [
+    `${row.querySelector(".severity-badge").textContent}: ${row.querySelector(".finding-copy strong").textContent}`,
+    row.querySelector(".finding-copy > span").textContent.replace(/\s*·\s*/g, " · "),
+    row.querySelector(".finding-copy small").textContent,
+    `Finding code: ${row.querySelector(".finding-id").textContent}`
+  ];
+  try {
+    await navigator.clipboard.writeText(lines.join("\n"));
+    status.textContent = "Finding copied.";
+  } catch {
+    status.textContent = "Clipboard unavailable. Select the finding text and copy it.";
+  }
+});
 
 function updateBreakdown(findings) {
   const counts = { Critical: 0, High: 0, Medium: 0, Low: 0 };

@@ -15,3 +15,4 @@ button:focus-visible,a:focus-visible,summary:focus-visible,label:focus-visible,i
 /* Demo flow and score explanation */
 .intro-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.score-method{margin-top:9px;border-top:1px solid #26334a;padding-top:7px}.score-method summary{cursor:pointer;color:#77d9cb;font-size:9px}.score-method p{margin:6px 0 0;color:#93a4bc;font-size:9px;line-height:1.6}.input-actions{flex-wrap:wrap}
 @media(max-width:700px){.intro-actions{justify-content:flex-start}.intro-actions button{font-size:9px}}
+.finding-copy .copy-finding{margin-top:7px}.copy-finding-status{display:inline-block;margin-left:8px;color:var(--green);font-size:9px}
