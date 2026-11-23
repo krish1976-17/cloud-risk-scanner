@@ -66,6 +66,8 @@ function getScore(findings) {
 
 function renderFindings(findings, showAll = false) {
   const viewAll = $("#view-all");
+  $("#copy-all-findings").disabled = findings.length === 0;
+  $("#copy-all-findings-status").textContent = "";
   viewAll.dataset.all = String(showAll && findings.length > 4);
   viewAll.hidden = findings.length <= 4;
   viewAll.innerHTML = showAll ? 'Show less <span>↑</span>' : 'View all <span>→</span>';
@@ -94,6 +96,21 @@ $("#findings-list").addEventListener("click", async (event) => {
     status.textContent = "Finding copied.";
   } catch {
     status.textContent = "Clipboard unavailable. Select the finding text and copy it.";
+  }
+});
+
+$("#copy-all-findings").addEventListener("click", async () => {
+  const text = lastFindings.map((finding) => [
+    `${finding.severity}: ${finding.title}`,
+    `${finding.resourceName} · ${finding.resourceType}`,
+    finding.fix,
+    `Finding code: ${finding.id}`
+  ].join("\n")).join("\n\n");
+  try {
+    await navigator.clipboard.writeText(text);
+    $("#copy-all-findings-status").textContent = `Copied all ${lastFindings.length} findings.`;
+  } catch {
+    $("#copy-all-findings-status").textContent = "Clipboard unavailable. Copy findings one at a time.";
   }
 });
 
