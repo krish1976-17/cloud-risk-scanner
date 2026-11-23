@@ -10,6 +10,14 @@ const sample = [
   { type: "cloudtrail", name: "organization-trail", logging_enabled: true, multi_region: true },
   { type: "ebs_volume", name: "analytics-volume-01", encryption_enabled: true }
 ];
+const secureSample = [
+  { type: "s3_bucket", name: "customer-uploads", public_access: false, encryption_enabled: true, logging_enabled: true },
+  { type: "security_group", name: "web-tier-sg", ingress: [{ protocol: "tcp", port: 443, cidr: "0.0.0.0/0" }] },
+  { type: "rds_instance", name: "orders-db-prod", publicly_accessible: false, encryption_enabled: true, backup_enabled: true },
+  { type: "iam_user", name: "legacy-deploy-user", mfa_enabled: true, access_key_age_days: 30 },
+  { type: "cloudtrail", name: "organization-trail", logging_enabled: true, multi_region: true },
+  { type: "ebs_volume", name: "analytics-volume-01", encryption_enabled: true }
+];
 
 const rules = [
   { id: "S3_PUBLIC", severity: "Critical", title: "Storage bucket allows public access", fix: "Block public access and review the bucket policy.", check: (r) => r.type === "s3_bucket" && (r.public_access === true || r.acl === "public-read" || r.acl === "public-read-write") },
@@ -24,6 +32,7 @@ const rules = [
 
 const weights = { Critical: 25, High: 15, Medium: 8, Low: 3 };
 let lastFindings = [];
+let lastReport = null;
 
 function saveFixAssistantContext(findings, metadata) {
   try {
@@ -92,7 +101,7 @@ function updateBreakdown(findings) {
   $("#risk-note").textContent = total ? `${counts.Critical + counts.High} of ${total} findings are critical or high priority.` : "No matched issues were found in this snapshot.";
 }
 
-function renderDashboard(resources, findings) {
+function renderDashboard(resources, findings, mode = "Cloud config JSON") {
   const score = getScore(findings);
   const critical = findings.filter((item) => item.severity === "Critical").length;
   const high = findings.filter((item) => item.severity === "High").length;
@@ -113,6 +122,15 @@ function renderDashboard(resources, findings) {
   updateBreakdown(findings);
   renderFindings(findings);
   lastFindings = findings;
+  lastReport = {
+    project: "CloudGuard learning project",
+    mode,
+    scannedAt: new Date().toISOString(),
+    demoScore: score,
+    resourcesScanned: resources.length,
+    findings: findings.map(({ id, severity, title, resourceName, resourceType, fix }) => ({ id, severity, title, resourceName, resourceType, fix }))
+  };
+  $("#export-report").disabled = false;
 }
 
 function runScan(resources) {
@@ -135,6 +153,20 @@ $("#run-scan").addEventListener("click", () => {
 });
 
 $("#sample-button").addEventListener("click", () => { input.value = JSON.stringify(sample, null, 2); $("#scan-feedback").textContent = "Sample configuration loaded. Run the scan to see results."; $("#scan-feedback").classList.add("visible"); $("#scan-feedback").classList.remove("error"); });
+$("#secure-sample-button").addEventListener("click", () => { input.value = JSON.stringify(secureSample, null, 2); $("#scan-feedback").textContent = "Secure example loaded. Run the scan to see the sample findings clear."; $("#scan-feedback").classList.add("visible"); $("#scan-feedback").classList.remove("error"); });
+$("#run-demo").addEventListener("click", () => {
+  runScan(sample);
+  $("#findings").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+$("#export-report").addEventListener("click", () => {
+  if (!lastReport) return;
+  const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `cloudguard-report-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+});
 $("#top-scan").addEventListener("click", () => { $("#scanner").scrollIntoView({ behavior: "smooth" }); input.focus({ preventScroll: true }); });
 $("#view-all").addEventListener("click", (event) => { const showingAll = event.currentTarget.dataset.all === "true"; renderFindings(lastFindings, !showingAll); event.currentTarget.dataset.all = String(!showingAll); event.currentTarget.innerHTML = showingAll ? 'View all <span>→</span>' : 'Show less <span>↑</span>'; });
 $("#dismiss-notice").addEventListener("click", () => $("#notice").remove());
@@ -173,7 +205,7 @@ $("#web-scan-button").addEventListener("click", async () => {
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "Scan request failed.");
     saveFixAssistantContext(result.findings, { mode: "Website", target, pagesScanned: result.pagesScanned });
-    renderDashboard(result.pages.map((page) => ({ type: "web page", name: new URL(page.url).pathname || "/" })), result.findings);
+    renderDashboard(result.pages.map((page) => ({ type: "web page", name: new URL(page.url).pathname || "/" })), result.findings, "Website");
     webStatus.textContent = `Completed: ${result.pagesScanned} page${result.pagesScanned === 1 ? "" : "s"} inspected. ${result.mode}.`;
     $("#page-list").replaceChildren(...result.pages.map((page) => {
       const row = document.createElement("div"); row.className = "page-item";
