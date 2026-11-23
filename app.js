@@ -103,6 +103,12 @@ function updateBreakdown(findings) {
 
 function renderDashboard(resources, findings, mode = "Cloud config JSON") {
   const score = getScore(findings);
+  const severityCounts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+  findings.forEach(({ severity }) => { if (severityCounts[severity] !== undefined) severityCounts[severity]++; });
+  const deductions = Object.fromEntries(Object.entries(weights).map(([severity, points]) => [severity, severityCounts[severity] * points]));
+  const totalDeduction = Object.values(deductions).reduce((sum, points) => sum + points, 0);
+  const breakdown = Object.entries(weights).map(([severity, points]) => `${severity} ${severityCounts[severity]} × ${points} = ${deductions[severity]}`).join(" · ");
+  $("#score-breakdown").textContent = `${breakdown}. Total deduction ${totalDeduction}; score is max(0, 100 − ${totalDeduction}) = ${score}.`;
   const critical = findings.filter((item) => item.severity === "Critical").length;
   const high = findings.filter((item) => item.severity === "High").length;
   $("#score").textContent = score;
@@ -127,6 +133,10 @@ function renderDashboard(resources, findings, mode = "Cloud config JSON") {
     mode,
     scannedAt: new Date().toISOString(),
     demoScore: score,
+    scoreCalculation: "max(0, 100 minus the severity-weighted finding deductions)",
+    severityCounts,
+    deductions,
+    totalDeduction,
     resourcesScanned: resources.length,
     findings: findings.map(({ id, severity, title, resourceName, resourceType, fix }) => ({ id, severity, title, resourceName, resourceType, fix }))
   };
