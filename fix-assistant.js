@@ -36,6 +36,15 @@ const defaultSeverity = {
 const input = document.querySelector("#findings-input");
 const output = document.querySelector("#fix-output");
 const status = document.querySelector("#fix-status");
+document.querySelector("#copy-fix-prompt").addEventListener("click", async () => {
+  const prompt = "Paste a CloudGuard report JSON or a finding code such as CSP_MISSING.";
+  try {
+    await navigator.clipboard.writeText(prompt);
+    document.querySelector("#copy-fix-prompt-status").textContent = "Prompt copied.";
+  } catch {
+    document.querySelector("#copy-fix-prompt-status").textContent = "Clipboard unavailable. Select the prompt text and copy it.";
+  }
+});
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
