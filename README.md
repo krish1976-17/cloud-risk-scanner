@@ -60,7 +60,7 @@ node --test tests/test_config_validation.js
 
 ## Files
 
-- `index.html`, `styles.css`, `app.js`, `config-validation.js` — the responsive dashboard, browser interaction, and cloud JSON validation.
+- `index.html`, `guide.html`, `styles.css`, `app.js`, `config-validation.js` — the dashboard, plain-language guide, browser interaction, and cloud JSON validation.
 - `server.py` — dashboard server and passive web scan endpoint.
 - `render.yaml` — hosted backend deployment settings.
 - `tests/` — backend URL/network-safety tests and cloud JSON validation tests.
