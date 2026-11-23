@@ -106,10 +106,8 @@ function renderDashboard(resources, findings) {
 }
 
 function runScan(resources) {
-  const validationError = validateResources(resources); if (validationError) throw new Error(validationError);
-  if (resources.length > 10000) throw new Error("This demo accepts up to 10,000 resources at a time.");
-  if (resources.some((item) => !item || typeof item !== "object" || Array.isArray(item))) throw new Error("Each array item must be a resource object.");
-  if (resources.some((item) => !item.type || typeof item.type !== "string")) throw new Error("Every resource needs a string 'type' property. See the example format below.");
+  const validationError = validateResources(resources);
+  if (validationError) throw new Error(validationError);
   $("#scan-feedback").classList.remove("error");
   const findings = scanResources(resources);
   renderDashboard(resources, findings);
@@ -138,8 +136,10 @@ $("#file-input").addEventListener("change", async (event) => {
 
 input.value = JSON.stringify(sample, null, 2);
 
-// Web application scan mode talks to the local Python service. The service sends
-// only ordinary GET requests and returns passive observations to this page.
+// The same-origin server handles local runs; GitHub Pages sends scans to the
+// companion hosted Python service. That service makes read-only GET requests.
+const scannerApiBase = window.CLOUDGUARD_API_URL ||
+  (location.hostname.endsWith(".github.io") ? "https://cloud-risk-scanner-api.onrender.com" : location.origin);
 const webStatus = $("#webscan-status");
 $(".scan-tabs").addEventListener("click", (event) => {
   const button = event.target.closest(".scan-tab");
@@ -158,8 +158,8 @@ $("#web-scan-button").addEventListener("click", async () => {
   webStatus.textContent = "Scanning pages with read-only requests…";
   $("#web-scan-button").disabled = true;
   try {
-    const response = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: target }) });
-    const result = await response.json();
+    const response = await fetch(`${scannerApiBase}/api/scan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: target }) });
+    const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "Scan request failed.");
     renderDashboard(result.pages.map((page) => ({ type: "web page", name: new URL(page.url).pathname || "/" })), result.findings);
     webStatus.textContent = `Completed: ${result.pagesScanned} page${result.pagesScanned === 1 ? "" : "s"} inspected. ${result.mode}.`;
@@ -171,7 +171,7 @@ $("#web-scan-button").addEventListener("click", async () => {
     }));
     $("#findings").scrollIntoView({ behavior: "smooth", block: "center" });
   } catch (error) {
-    webStatus.textContent = `${error.message} Make sure you started CloudGuard with python server.py.`;
+    webStatus.textContent = `${error.message} The hosted scanner service may still be starting. Try again in a moment.`;
     webStatus.classList.add("error");
   } finally { $("#web-scan-button").disabled = false; }
 });

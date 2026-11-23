@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: cloud-risk-scanner-api
+    runtime: python
+    plan: free
+    buildCommand: python -m compileall -q .
+    startCommand: python server.py
+    healthCheckPath: /api/health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: ALLOWED_ORIGINS
+        value: https://krish1976-17.github.io,https://cloud-risk-scanner-api.onrender.com

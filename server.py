@@ -5,19 +5,30 @@ import html.parser
 import http.client
 import ipaddress
 import json
+import os
 import re
 import socket
 import ssl
+import threading
+import time
 import urllib.parse
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-HOST = "127.0.0.1"
-PORT = 8000
+HOST = os.environ.get("HOST", "127.0.0.1")
+PORT = int(os.environ.get("PORT", "8000"))
+ALLOWED_ORIGINS = {item.strip() for item in os.environ.get(
+    "ALLOWED_ORIGINS",
+    "https://krish1976-17.github.io,https://cloud-risk-scanner-api.onrender.com",
+).split(",") if item.strip()}
 MAX_PAGES = 12
 MAX_BYTES = 1_000_000
 TIMEOUT = 6
+RATE_LIMIT_WINDOW = 60
+RATE_LIMIT_SCANS = 5
+_scan_times = {}
+_scan_times_lock = threading.Lock()
 
 class LinkParser(html.parser.HTMLParser):
     def __init__(self):
@@ -65,6 +76,8 @@ def validate_url(value):
     try: port = parsed.port
     except ValueError: raise ValueError("The URL has an invalid port.")
     origin = (parsed.scheme, parsed.hostname.lower(), port or (443 if parsed.scheme == "https" else 80))
+    if origin[2] not in (80, 443) and origin[1] not in {"localhost", "127.0.0.1", "::1"}:
+        raise ValueError("Remote scans are limited to standard HTTP and HTTPS ports (80 and 443).")
     # Permit loopback only by its explicit local names for development. Remote scans
     # must resolve exclusively to globally routable addresses.
     local_names = {"localhost", "127.0.0.1", "::1"}
@@ -227,25 +240,65 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs): super().__init__(*args, directory=str(ROOT), **kwargs)
     def end_headers(self):
         self.send_header("X-Content-Type-Options", "nosniff")
+        request_origin = self.headers.get("Origin", "")
+        allowed_origins = ALLOWED_ORIGINS | {f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"}
+        if request_origin in allowed_origins:
+            self.send_header("Access-Control-Allow-Origin", request_origin)
+            self.send_header("Vary", "Origin")
         super().end_headers()
+    def do_OPTIONS(self):
+        request_origin = self.headers.get("Origin", "")
+        allowed_origins = ALLOWED_ORIGINS | {f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"}
+        if self.path != "/api/scan" or request_origin not in allowed_origins:
+            self.send_error(403, "This page is not allowed to use the scanner."); return
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", request_origin)
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Max-Age", "600")
+        self.send_header("Vary", "Origin")
+        self.end_headers()
     def do_POST(self):
         if self.path != "/api/scan": self.send_error(404); return
         origin = self.headers.get("Origin", "")
-        if origin not in (f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"):
-            self.send_error(403, "Open CloudGuard from its local server before scanning."); return
+        allowed_origins = ALLOWED_ORIGINS | {f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"}
+        if origin not in allowed_origins:
+            self.send_error(403, "This page is not allowed to use the scanner."); return
         try:
+            client_ip = self.headers.get("CF-Connecting-IP", self.headers.get("X-Forwarded-For", self.client_address[0]).split(",", 1)[0]).strip()
+            now = time.monotonic()
+            with _scan_times_lock:
+                if len(_scan_times) > 1000:
+                    _scan_times.clear()
+                recent = [stamp for stamp in _scan_times.get(client_ip, []) if now - stamp < RATE_LIMIT_WINDOW]
+                if len(recent) >= RATE_LIMIT_SCANS:
+                    self._send_json(429, {"error": "Scan limit reached. Wait a minute and try again."})
+                    return
+                recent.append(now)
+                _scan_times[client_ip] = recent
             length = int(self.headers.get("Content-Length", "0"))
             if length < 1 or length > 4096: raise ValueError("Request size is invalid.")
             data = json.loads(self.rfile.read(length))
+            if not isinstance(data, dict): raise ValueError("Request body must be a JSON object.")
             result = scan(str(data.get("url", "")))
-            payload = json.dumps(result).encode()
-            self.send_response(200); self.send_header("Content-Type", "application/json; charset=utf-8"); self.send_header("Content-Length", str(len(payload))); self.send_header("Cache-Control", "no-store"); self.end_headers(); self.wfile.write(payload)
+            self._send_json(200, result)
         except ValueError as error:
-            payload = json.dumps({"error": str(error)}).encode()
-            self.send_response(400); self.send_header("Content-Type", "application/json; charset=utf-8"); self.send_header("Content-Length", str(len(payload))); self.send_header("Cache-Control", "no-store"); self.end_headers(); self.wfile.write(payload)
+            self._send_json(400, {"error": str(error)})
         except Exception as error:
-            payload = json.dumps({"error": f"Scan failed: {str(error)[:200]}"}).encode()
-            self.send_response(502); self.send_header("Content-Type", "application/json; charset=utf-8"); self.send_header("Content-Length", str(len(payload))); self.end_headers(); self.wfile.write(payload)
+            self._send_json(502, {"error": f"Scan failed: {str(error)[:200]}"})
+    def do_GET(self):
+        if self.path == "/api/health":
+            self._send_json(200, {"status": "ok", "service": "CloudGuard passive scanner"})
+            return
+        super().do_GET()
+    def _send_json(self, status, value):
+        payload = json.dumps(value).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(payload)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(payload)
     def log_message(self, fmt, *args): print("[CloudGuard] " + fmt % args)
 
 if __name__ == "__main__":

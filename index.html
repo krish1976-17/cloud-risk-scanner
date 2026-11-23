@@ -31,10 +31,10 @@
       <div class="sidebar-bottom"><div class="scan-status"><span class="pulse"></span><span><small>SCANNER STATUS</small><strong>Ready to scan</strong></span></div><div class="profile"><div class="avatar">CG</div><span><strong>CloudGuard</strong><small>Student edition</small></span><span class="more">···</span></div></div>
     </aside>
     <main id="top">
-      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <b>Security overview</b></div><div class="top-actions"><span class="local-pill"><i></i> Local scanner</span><button class="icon-button" aria-label="Help" title="About this demo">?</button></div></header>
+      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <b>Security overview</b></div><div class="top-actions"><span class="local-pill"><i></i> Passive scanner</span><button class="icon-button" aria-label="Help" title="About this demo">?</button></div></header>
       <section class="content" id="dashboard">
         <div class="intro"><div><div class="eyebrow"><span class="eyebrow-line"></span> CLOUD SECURITY POSTURE</div><h1>See your cloud <span>clearly.</span></h1><p class="subtitle">Spot risky configuration patterns before they become incidents.</p></div><button class="primary-button" id="top-scan"><span>＋</span> New scan</button></div>
-        <div class="notice" id="notice"><span class="notice-icon">i</span><span><strong>Learning project · sample data</strong> Cloud JSON is analyzed in this browser and is not uploaded. Web scans send the target URL to the local Python service and make read-only requests.</span><button id="dismiss-notice" aria-label="Dismiss notice">×</button></div>
+        <div class="notice" id="notice"><span class="notice-icon">i</span><span><strong>Learning project · sample data</strong> Cloud JSON is analyzed in this browser and is not uploaded. Web scans send the URL to CloudGuard's scanner service, which makes limited, read-only requests to public websites.</span><button id="dismiss-notice" aria-label="Dismiss notice">×</button></div>
         <div class="section-heading"><div><h2>Security overview</h2><p id="scan-summary">Run a demo scan to explore the dashboard.</p></div><span class="scan-time" id="last-scan">NO SCAN YET</span></div>
         <div class="metrics">
           <article class="metric-card score-card"><div class="metric-top"><span>DEMO POSTURE SCORE</span><span class="metric-symbol" title="Educational estimate, not a standard">◉</span></div><div class="score-row"><strong id="score">—</strong><div class="score-ring"><span id="score-ring-text">—</span></div></div><div class="metric-foot"><span id="score-caption">Waiting for a scan</span><span class="muted">/ 100</span></div><div class="score-track"><i id="score-bar"></i></div></article>
@@ -56,12 +56,13 @@
   "logging_enabled": true
 }]</pre></details><div id="webscan-pane" class="webscan-pane" hidden><div class="webscan-form"><label for="target-url">APPLICATION URL</label><div class="url-row"><input id="target-url" type="url" placeholder="https://your-app.example" autocomplete="url"><button class="primary-button" id="web-scan-button"><span>⌕</span> Scan application</button></div><p>Enter an application you own or are authorized to assess. CloudGuard makes read-only GET requests and follows same-site links (up to 12 pages).</p><div class="webscan-status" id="webscan-status" aria-live="polite"></div></div><div class="webscan-note"><span class="scan-aside-icon">⌁</span><strong>Passive checks only</strong><span>Checks HTTPS, response headers, cookies, forms, mixed content, and common exposure signals. No login, payloads, or changes.</span></div><div id="page-list" class="page-list"></div></div>
         </section>
-        <footer><span>CloudGuard <span class="footer-sep">·</span> Cloud Misconfiguration Detection &amp; Risk Scanner</span><span>Built for learning <span class="footer-sep">·</span> Local scanner</span></footer>
+        <footer><span>CloudGuard <span class="footer-sep">·</span> Cloud Misconfiguration Detection &amp; Risk Scanner</span><span>Built for learning <span class="footer-sep">·</span> Passive website scanner</span></footer>
       </section>
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="config-validation.js" defer></script><script src="app.js" defer></script>
+  <script src="config-validation.js" defer></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
 
