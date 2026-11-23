@@ -242,7 +242,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         request_origin = self.headers.get("Origin", "")
         allowed_origins = ALLOWED_ORIGINS | {f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"}
-        if request_origin in allowed_origins:
+        if self.command != "OPTIONS" and request_origin in allowed_origins:
             self.send_header("Access-Control-Allow-Origin", request_origin)
             self.send_header("Vary", "Origin")
         super().end_headers()
