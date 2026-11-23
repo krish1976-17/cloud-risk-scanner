@@ -2,14 +2,13 @@
 from __future__ import annotations
 
 import html.parser
+import http.client
 import ipaddress
 import json
 import re
 import socket
 import ssl
-import urllib.error
 import urllib.parse
-import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -55,16 +54,9 @@ class LinkParser(html.parser.HTMLParser):
     def handle_data(self, data):
         if self.in_title: self.title += data
 
-class SameOriginRedirect(urllib.request.HTTPRedirectHandler):
-    def __init__(self, origin):
-        super().__init__(); self.origin = origin
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        parsed = urllib.parse.urlparse(newurl)
-        if (parsed.scheme, (parsed.hostname or "").lower(), parsed.port or (443 if parsed.scheme == "https" else 80)) != self.origin:
-            raise urllib.error.HTTPError(newurl, code, "Cross-origin redirect blocked", headers, fp)
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
-
 def validate_url(value):
+    if not isinstance(value, str):
+        raise ValueError("Enter a full http:// or https:// URL.")
     parsed = urllib.parse.urlparse(value.strip())
     if parsed.scheme not in ("http", "https") or not parsed.hostname:
         raise ValueError("Enter a full http:// or https:// URL.")
@@ -92,27 +84,70 @@ def validate_url(value):
     return parsed, origin, frozenset(addresses)
 
 def fetch(url, origin, allowed_addresses):
-    # Re-resolve before every page and reject DNS changes into a private network.
-    # This narrows DNS-rebinding exposure while keeping the scanner dependency-free.
-    current_addresses = {item[4][0] for item in socket.getaddrinfo(origin[1], origin[2], type=socket.SOCK_STREAM)}
-    if not current_addresses or not current_addresses.issubset(allowed_addresses):
-        raise ValueError("The target host changed its DNS addresses during the scan.")
-    for address in current_addresses:
-        ip = ipaddress.ip_address(address.split("%", 1)[0])
-        if not ip.is_global and not (origin[1] in {"localhost", "127.0.0.1", "::1"} and ip.is_loopback):
-            raise ValueError("The target resolved to a blocked network address.")
-    opener = urllib.request.build_opener(SameOriginRedirect(origin))
-    request = urllib.request.Request(url, headers={"User-Agent": "CloudGuard-InternshipScanner/1.0", "Accept": "text/html,application/xhtml+xml;q=0.9,*/*;q=0.2"}, method="GET")
-    context = ssl.create_default_context()
-    try:
-        response = opener.open(request, timeout=TIMEOUT, context=context)
-    except TypeError:
-        # HTTPSHandler context is configured through opener; this branch is not used by default opener.
-        response = opener.open(request, timeout=TIMEOUT)
-    with response:
-        body = response.read(MAX_BYTES + 1)
-        if len(body) > MAX_BYTES: body = body[:MAX_BYTES]
-        return response.geturl(), response.status, response.headers, body
+    class PinnedHTTPConnection(http.client.HTTPConnection):
+        def __init__(self, host, port, address):
+            super().__init__(host, port, timeout=TIMEOUT)
+            self.pinned_address = address
+        def _create_connection(self, address, timeout, source_address):
+            return socket.create_connection((self.pinned_address, address[1]), timeout, source_address)
+
+    class PinnedHTTPSConnection(http.client.HTTPSConnection):
+        def __init__(self, host, port, address):
+            super().__init__(host, port, timeout=TIMEOUT, context=ssl.create_default_context())
+            self.pinned_address = address
+        def _create_connection(self, address, timeout, source_address):
+            return socket.create_connection((self.pinned_address, address[1]), timeout, source_address)
+
+    current_url = url
+    for redirect_count in range(6):
+        current = urllib.parse.urlparse(current_url)
+        current_origin = (current.scheme, (current.hostname or "").lower(), current.port or (443 if current.scheme == "https" else 80))
+        if current_origin != origin:
+            raise ValueError("Cross-origin redirects are blocked.")
+        try:
+            current_addresses = {item[4][0] for item in socket.getaddrinfo(origin[1], origin[2], type=socket.SOCK_STREAM)}
+        except socket.gaierror as error:
+            raise ValueError(f"Could not resolve the target host: {error}")
+        if not current_addresses or not current_addresses.issubset(allowed_addresses):
+            raise ValueError("The target host changed its DNS addresses during the scan.")
+        local_names = {"localhost", "127.0.0.1", "::1"}
+        for address in current_addresses:
+            ip = ipaddress.ip_address(address.split("%", 1)[0])
+            if not ip.is_global and not (origin[1] in local_names and ip.is_loopback):
+                raise ValueError("The target resolved to a blocked network address.")
+
+        address = sorted(current_addresses)[0]
+        connection_type = PinnedHTTPSConnection if current.scheme == "https" else PinnedHTTPConnection
+        connection = connection_type(origin[1], origin[2], address)
+        path = urllib.parse.urlunparse(("", "", current.path or "/", current.params, current.query, ""))
+        host_header = f"[{origin[1]}]" if ":" in origin[1] else origin[1]
+        default_port = 443 if origin[0] == "https" else 80
+        if origin[2] != default_port:
+            host_header += f":{origin[2]}"
+        try:
+            connection.request("GET", path, headers={
+                "Host": host_header,
+                "User-Agent": "CloudGuard-InternshipScanner/1.0",
+                "Accept": "text/html,application/xhtml+xml;q=0.9,*/*;q=0.2",
+                "Connection": "close",
+            })
+            response = connection.getresponse()
+            if response.status in (301, 302, 303, 307, 308) and response.getheader("Location"):
+                next_url = urllib.parse.urljoin(current_url, response.getheader("Location"))
+                next_parsed = urllib.parse.urlparse(next_url)
+                next_origin = (next_parsed.scheme, (next_parsed.hostname or "").lower(), next_parsed.port or (443 if next_parsed.scheme == "https" else 80))
+                response.read(1024)
+                if next_origin != origin:
+                    raise ValueError("Cross-origin redirects are blocked.")
+                if redirect_count == 5:
+                    raise ValueError("The target redirected too many times.")
+                current_url = next_url
+                continue
+            body = response.read(MAX_BYTES + 1)[:MAX_BYTES]
+            return current_url, response.status, response.headers, body
+        finally:
+            connection.close()
+    raise ValueError("The target redirected too many times.")
 
 HEADER_RULES = [
     ("CSP_MISSING", "Medium", "Content Security Policy is missing", "Add a Content-Security-Policy suited to the application's scripts, styles, and APIs.", "content-security-policy"),
