@@ -26,6 +26,13 @@ const advice = {
 };
 
 const storageKey = "cloudguard_latest_scan_v1";
+const defaultSeverity = {
+  S3_PUBLIC: "Critical", SG_SSH_OPEN: "Critical", RDS_PUBLIC: "Critical", PASSWORD_FORM_HTTP: "Critical",
+  ENCRYPTION_OFF: "High", MFA_OFF: "High", FORM_HTTP: "High", HTTPS_NOT_USED: "High",
+  LOGGING_OFF: "Medium", BACKUP_OFF: "Medium", PAGE_FETCH: "Medium", DIR_LISTING: "Medium", MIXED_CONTENT: "Medium",
+  HSTS_MISSING: "Medium", CSP_MISSING: "Medium", FRAME_GUARD_MISSING: "Medium", COOKIE_FLAGS: "Medium",
+  KEY_OLD: "Low", BLANK_NOOPENER: "Low", NOSNIFF_MISSING: "Low", REFERRER_MISSING: "Low", PERMISSIONS_MISSING: "Low"
+};
 const input = document.querySelector("#findings-input");
 const output = document.querySelector("#fix-output");
 const status = document.querySelector("#fix-status");
@@ -59,7 +66,7 @@ function parseUserInput(raw) {
   catch {
     const upper = text.toUpperCase();
     const matches = Object.entries(advice).filter(([id, item]) => upper.includes(id) || text.toLowerCase().includes(item.title.toLowerCase()));
-    return matches.map(([id, item]) => ({ id, title: item.title, severity: "Review", detail: text }));
+    return matches.map(([id, item]) => ({ id, title: item.title, severity: defaultSeverity[id] || "Review", detail: text }));
   }
 }
 
@@ -159,7 +166,7 @@ document.querySelector("#make-plan").addEventListener("click", () => {
     status.classList.add("error");
     return;
   }
-  renderPlan(findings);
+  renderPlan(findings, { mode: "Pasted finding or report" });
 });
 
 const latest = loadLatest();
