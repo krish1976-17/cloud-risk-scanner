@@ -141,6 +141,7 @@ function renderDashboard(resources, findings, mode = "Cloud config JSON") {
     findings: findings.map(({ id, severity, title, resourceName, resourceType, fix }) => ({ id, severity, title, resourceName, resourceType, fix }))
   };
   $("#export-report").disabled = false;
+  $("#export-readable-report").disabled = false;
 }
 
 function runScan(resources) {
@@ -174,6 +175,27 @@ $("#export-report").addEventListener("click", () => {
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = `cloudguard-report-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+});
+$("#export-readable-report").addEventListener("click", () => {
+  if (!lastReport) return;
+  const findings = lastReport.findings.length ? lastReport.findings.map((finding) => `
+    <article class="finding">
+      <div class="finding-head"><span class="severity ${escapeHTML(finding.severity.toLowerCase())}">${escapeHTML(finding.severity)}</span><span class="rule">${escapeHTML(finding.id)}</span></div>
+      <h2>${escapeHTML(finding.title)}</h2>
+      <p class="resource">${escapeHTML(finding.resourceName)} · ${escapeHTML(finding.resourceType)}</p>
+      <p>${escapeHTML(finding.fix)}</p>
+    </article>`).join("") : '<p class="clear">No matched issues were found in this scan snapshot.</p>';
+  const severitySummary = Object.entries(lastReport.severityCounts).map(([severity, count]) => `${escapeHTML(severity)}: ${count}`).join(" · ");
+  const breakdown = Object.entries(lastReport.deductions).map(([severity, points]) => `${escapeHTML(severity)} −${points}`).join(" · ");
+  const markup = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CloudGuard scan report</title><style>
+    *{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#172235;font:15px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}.sheet{max-width:900px;margin:36px auto;background:white;padding:40px;border:1px solid #dce3ec;border-radius:14px}.brand{color:#127f82;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}h1{font-size:30px;margin:8px 0 4px}.meta{color:#64748b;margin:0 0 24px}.score{display:flex;gap:24px;align-items:center;background:#f0f8f7;border:1px solid #c9e8e3;padding:18px;border-radius:10px}.score strong{font-size:36px;line-height:1}.score small{display:block;color:#526477}.score p{margin:0;color:#34475b}.counts{font-size:13px;color:#526477;margin:8px 0 0}.finding{border-top:1px solid #e2e8f0;padding:18px 0}.finding-head{display:flex;justify-content:space-between;align-items:center}.severity{font-size:11px;font-weight:800;border-radius:30px;padding:3px 9px;background:#e7edf5}.critical{color:#a91e35;background:#fde8ec}.high{color:#a34413;background:#fff0e4}.medium{color:#8b6200;background:#fff6d8}.low{color:#176b4b;background:#e3f6ed}.rule{font:12px ui-monospace,monospace;color:#66758a}.finding h2{font-size:18px;margin:8px 0 0}.resource{color:#64748b;font-size:13px;margin:2px 0 8px}.clear{padding:18px;background:#e8f8ef;color:#16633e;border-radius:8px}.scope{border-top:1px solid #e2e8f0;margin-top:24px;padding-top:14px;font-size:12px;color:#64748b}.scope strong{color:#334155}@media(max-width:640px){.sheet{margin:0;padding:22px;border:0;border-radius:0}.score{align-items:flex-start;flex-direction:column}h1{font-size:25px}}
+  </style></head><body><main class="sheet"><div class="brand">CloudGuard · Scan report</div><h1>Security scan summary</h1><p class="meta">${escapeHTML(lastReport.mode)} · ${escapeHTML(new Date(lastReport.scannedAt).toLocaleString())} · ${lastReport.resourcesScanned} resource(s)</p><section class="score"><div><strong>${lastReport.demoScore}<small>/ 100</small></strong></div><div><b>Educational posture score</b><p>Starts at 100, minus severity-weighted finding deductions, with a floor of 0.</p><p class="counts">${severitySummary}</p><p class="counts">Deductions: ${breakdown}. Total: ${lastReport.totalDeduction} points.</p></div></section><h2>Findings (${lastReport.findings.length})</h2>${findings}<footer class="scope"><strong>Scope and limits:</strong> CloudGuard is an internship learning project using heuristic checks. Results may be incomplete or false positives. Manually verify each finding in the target environment; this report is not a production security assessment.</footer></main></body></html>`;
+  const blob = new Blob([markup], { type: "text/html;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `cloudguard-readable-report-${new Date().toISOString().slice(0, 10)}.html`;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 });

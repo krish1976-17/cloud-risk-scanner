@@ -45,7 +45,7 @@ Use the **Cloud config JSON** tab and paste or upload an array of resources. Eac
 
 The cloud rules check public bucket access, public SSH, publicly accessible databases, encryption, MFA, logging, backups, and old access keys. The posture score is an educational demonstration: 100 minus 25 per Critical, 15 per High, 8 per Medium, and 3 per Low finding, with a floor of 0. Each matched rule is counted independently, so repeated findings can lower the score quickly. It is not an industry-standard rating or a measure of overall cloud security.
 
-For a guided demonstration, choose **Try sample scan** on the dashboard, open **Fix assistant** for the findings, then return to the scanner, choose **Load secure example**, and run the scan again. The sample issues should clear. The score formula and each scan's point deductions are shown beside the dashboard score and included in the downloadable JSON report.
+For a guided demonstration, choose **Try sample scan** on the dashboard, open **Fix assistant** for the findings, then return to the scanner, choose **Load secure example**, and run the scan again. The sample issues should clear. The score formula and each scan's point deductions are shown beside the dashboard score and included in the downloadable JSON and readable HTML reports.
 
 ## Web scan checks
 

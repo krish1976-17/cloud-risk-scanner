@@ -37,7 +37,7 @@
       <section class="content" id="dashboard">
         <div class="intro"><div><div class="eyebrow"><span class="eyebrow-line"></span> CLOUD SECURITY POSTURE</div><h1>See your cloud <span>clearly.</span></h1><p class="subtitle">Spot risky configuration patterns before they become incidents.</p></div><div class="intro-actions"><button class="secondary-button" id="run-demo">▶ Try sample scan</button><button class="primary-button" id="top-scan"><span>＋</span> New scan</button></div></div>
         <div class="notice" id="notice"><span class="notice-icon">i</span><span><strong>Learning project · sample data</strong> Cloud JSON is analyzed in this browser and is not uploaded. Web scans send the URL to CloudGuard's scanner service, which makes limited, read-only requests to public websites.</span><button id="dismiss-notice" aria-label="Dismiss notice">×</button></div>
-        <div class="section-heading"><div><h2>Security overview</h2><p id="scan-summary">Try the sample scan to explore the dashboard.</p></div><div class="section-actions"><button class="secondary-button" id="export-report" type="button" disabled>↓ Download report</button><span class="scan-time" id="last-scan">NO SCAN YET</span></div></div>
+        <div class="section-heading"><div><h2>Security overview</h2><p id="scan-summary">Try the sample scan to explore the dashboard.</p></div><div class="section-actions"><button class="secondary-button" id="export-report" type="button" disabled>↓ JSON report</button><button class="secondary-button" id="export-readable-report" type="button" disabled>↓ Readable report</button><span class="scan-time" id="last-scan">NO SCAN YET</span></div></div>
         <div class="metrics">
           <article class="metric-card score-card"><div class="metric-top"><span>DEMO POSTURE SCORE</span><span class="metric-symbol" title="Educational estimate, not a standard">◉</span></div><div class="score-row"><strong id="score">—</strong><div class="score-ring"><span id="score-ring-text">—</span></div></div><div class="metric-foot"><span id="score-caption">Waiting for a scan</span><span class="muted">/ 100</span></div><div class="score-track"><i id="score-bar"></i></div><details class="score-method"><summary>How is this score calculated?</summary><p>Starts at 100, then subtracts 25 per Critical, 15 per High, 8 per Medium, and 3 per Low finding. The score stops at 0. Each matched rule counts separately. This is a learning aid, not an industry standard or a complete security rating.</p><p id="score-breakdown">Run a scan to see this report's point breakdown.</p></details></article>
           <article class="metric-card"><div class="metric-top"><span>CRITICAL FINDINGS</span><span class="metric-symbol critical">✳</span></div><div class="metric-value" id="critical-count">—</div><div class="metric-foot"><span class="severity-dot red"></span><span id="critical-caption">Highest priority</span></div></article>
@@ -64,7 +64,7 @@
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="config-validation.js" defer></script>
-  <script src="app.js?v=score-breakdown-1" defer></script>
+  <script src="app.js?v=readable-report-1" defer></script>
 </body>
 </html>
 
