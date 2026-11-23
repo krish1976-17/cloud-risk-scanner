@@ -106,7 +106,7 @@ function renderDashboard(resources, findings) {
 }
 
 function runScan(resources) {
-  if (!Array.isArray(resources)) throw new Error("Your JSON must contain an array of resource objects.");
+  const validationError = validateResources(resources); if (validationError) throw new Error(validationError);
   if (resources.length > 10000) throw new Error("This demo accepts up to 10,000 resources at a time.");
   if (resources.some((item) => !item || typeof item !== "object" || Array.isArray(item))) throw new Error("Each array item must be a resource object.");
   if (resources.some((item) => !item.type || typeof item.type !== "string")) throw new Error("Every resource needs a string 'type' property. See the example format below.");
