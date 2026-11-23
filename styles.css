@@ -8,6 +8,8 @@ button:focus-visible,a:focus-visible,summary:focus-visible,label:focus-visible,i
 .help-link{display:grid;place-items:center;text-decoration:none}
 .section-actions{display:flex;align-items:center;gap:12px}.section-actions .secondary-button{white-space:nowrap}.section-actions button:disabled{opacity:.48;cursor:not-allowed}
 @media(max-width:700px){.section-actions{align-items:flex-end;flex-direction:column;gap:6px}.section-actions .scan-time{font-size:8px}}
+/* Keep page navigation usable on narrow screens. */
+@media(max-width:700px){.sidebar{padding:10px 12px}.brand{height:32px;margin-bottom:7px}.workspace,.nav-label,.sidebar-bottom{display:none}.sidebar nav{display:flex;gap:4px;overflow-x:auto;margin:0 -3px;padding:0 3px 5px;scrollbar-width:thin}.sidebar nav .nav-item{flex:0 0 auto;white-space:nowrap;margin:0;padding:6px 8px;font-size:10px;gap:6px}.sidebar nav .nav-item span:first-child{width:auto;font-size:14px}.sidebar nav .nav-count{padding:1px 5px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 /* Demo flow and score explanation */
 .intro-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.score-method{margin-top:9px;border-top:1px solid #26334a;padding-top:7px}.score-method summary{cursor:pointer;color:#77d9cb;font-size:9px}.score-method p{margin:6px 0 0;color:#93a4bc;font-size:9px;line-height:1.6}.input-actions{flex-wrap:wrap}
