@@ -2,6 +2,8 @@
 
 CloudGuard is an internship learning project with two scan modes:
 
+![Quality checks](https://github.com/krish1976-17/cloud-risk-scanner/actions/workflows/quality.yml/badge.svg)
+
 - **Cloud config JSON:** browser-based analysis for common cloud configuration patterns.
 - **Web application:** a passive URL scan that inspects up to 12 same-site pages for HTTPS use, browser security headers, cookie attributes, mixed content, insecure forms, directory listings, and opener protection.
 
@@ -46,6 +48,8 @@ Use the **Cloud config JSON** tab and paste or upload an array of resources. Eac
 The cloud rules check public bucket access, public SSH, publicly accessible databases, encryption, MFA, logging, backups, and old access keys. The posture score is an educational demonstration: 100 minus 25 per Critical, 15 per High, 8 per Medium, and 3 per Low finding, with a floor of 0. Each matched rule is counted independently, so repeated findings can lower the score quickly. It is not an industry-standard rating or a measure of overall cloud security.
 
 For a guided demonstration, choose **Try sample scan** on the dashboard, open **Fix assistant** for the findings, then return to the scanner, choose **Load secure example**, and run the scan again. The sample issues should clear. The score formula and each scan's point deductions are shown beside the dashboard score and included in the downloadable JSON and readable HTML reports.
+
+The risk chart also shows a plain-text percentage breakdown with a one-click copy option.
 
 ## Web scan checks
 

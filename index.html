@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=score-breakdown-1">
+  <link rel="stylesheet" href="styles.css?v=risk-copy-1">
 </head>
 <body>
   <div class="app-shell">
@@ -46,7 +46,7 @@
         </div>
         <div class="main-grid">
           <section class="panel findings-panel" id="findings"><div class="panel-heading"><div><h2>Priority findings</h2><p>Configuration issues ranked by severity</p></div><button class="text-button" id="view-all">View all <span>→</span></button></div><div class="findings-list" id="findings-list"><div class="empty-state"><div class="empty-icon">⌕</div><strong>Your findings will appear here</strong><span>Run the sample scan or upload a JSON file.</span></div></div></section>
-          <section class="panel breakdown-panel"><div class="panel-heading"><div><h2>Risk breakdown</h2><p>Findings by severity</p></div><span class="donut-label" id="finding-total">0 total</span></div><div class="chart-wrap"><div class="donut" id="donut"><div class="donut-center"><strong id="donut-total">0</strong><span>findings</span></div></div><div class="legend"><div><i class="red-bg"></i><span>Critical</span><b id="legend-critical">0</b></div><div><i class="orange-bg"></i><span>High</span><b id="legend-high">0</b></div><div><i class="yellow-bg"></i><span>Medium</span><b id="legend-medium">0</b></div><div><i class="green-bg"></i><span>Low</span><b id="legend-low">0</b></div></div></div><div class="chart-note"><span>✦</span><span id="risk-note">Your risk distribution appears after scanning.</span></div></section>
+          <section class="panel breakdown-panel"><div class="panel-heading"><div><h2>Risk breakdown</h2><p>Findings by severity</p></div><span class="donut-label" id="finding-total">0 total</span></div><div class="chart-wrap"><div class="donut" id="donut"><div class="donut-center"><strong id="donut-total">0</strong><span>findings</span></div></div><div class="legend"><div><i class="red-bg"></i><span>Critical</span><b id="legend-critical">0</b></div><div><i class="orange-bg"></i><span>High</span><b id="legend-high">0</b></div><div><i class="yellow-bg"></i><span>Medium</span><b id="legend-medium">0</b></div><div><i class="green-bg"></i><span>Low</span><b id="legend-low">0</b></div></div></div><div class="chart-note"><span>✦</span><span id="risk-note">Your risk distribution appears after scanning.</span></div><div class="risk-text-output"><pre id="risk-lines" aria-label="Risk breakdown as text">Run a scan to see risk percentages.</pre><div class="risk-copy"><button class="secondary-button" id="copy-risk" type="button" disabled>Copy breakdown</button><span id="copy-risk-status" role="status" aria-live="polite"></span></div></div></section>
         </div>
         <section class="panel scanner-panel" id="scanner"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SECURITY SCANNER</div><h2>Scan a configuration or web app</h2><p>Choose cloud JSON analysis or a passive web application scan.</p></div><span class="rule-badge">8 config rules · web checks</span></div>
           <div class="scan-tabs"><button class="scan-tab active" data-pane="config-pane">Cloud config JSON</button><button class="scan-tab" data-pane="webscan-pane">Web application</button></div><div id="config-pane" class="scan-grid"><div class="input-column"><label for="config-input">RESOURCE CONFIGURATION <span>JSON</span></label><textarea id="config-input" spellcheck="false" aria-describedby="json-help" placeholder='[{ "type": "s3_bucket", "name": "example", "public_access": true }]'></textarea><div class="input-help" id="json-help">Expected: an array of resource objects with a <code>type</code>, <code>name</code>, and configuration properties.</div><div class="input-actions"><button class="secondary-button" id="sample-button">↻ Load sample data</button><button class="secondary-button" id="secure-sample-button">✓ Load secure example</button><label class="upload-button" for="file-input">↑ Upload JSON</label><input id="file-input" type="file" accept=".json,application/json" hidden></div></div><div class="scan-aside"><div class="scan-aside-icon">⌁</div><h3>Ready when you are</h3><p>Your configuration stays in this browser tab. The scanner checks common public access, encryption, logging, and network exposure settings.</p><button class="primary-button scan-button" id="run-scan"><span>⌕</span> Run security scan</button><div class="scan-feedback" id="scan-feedback" aria-live="polite"></div></div></div>
@@ -64,7 +64,7 @@
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="config-validation.js" defer></script>
-  <script src="app.js?v=readable-report-1" defer></script>
+  <script src="app.js?v=risk-copy-1" defer></script>
 </body>
 </html>
 

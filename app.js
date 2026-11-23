@@ -87,6 +87,12 @@ function updateBreakdown(findings) {
     if (severity === "Critical" || severity === "High") $(`#${id}-count`).textContent = count;
   });
   const total = findings.length;
+  $("#risk-lines").textContent = [
+    ...Object.entries(counts).map(([severity, count]) => `${severity}: ${count} (${total ? (count / total * 100).toFixed(1) : "0.0"}%)`),
+    `Total: ${total} finding${total === 1 ? "" : "s"}`
+  ].join("\n");
+  $("#copy-risk").disabled = false;
+  $("#copy-risk-status").textContent = "";
   $("#donut-total").textContent = total;
   $("#finding-total").textContent = `${total} total`;
   $("#nav-count").textContent = total;
@@ -198,6 +204,14 @@ $("#export-readable-report").addEventListener("click", () => {
   link.download = `cloudguard-readable-report-${new Date().toISOString().slice(0, 10)}.html`;
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+});
+$("#copy-risk").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText($("#risk-lines").textContent);
+    $("#copy-risk-status").textContent = "Copied risk breakdown.";
+  } catch {
+    $("#copy-risk-status").textContent = "Clipboard unavailable. Select the lines and copy them.";
+  }
 });
 $("#top-scan").addEventListener("click", () => { $("#scanner").scrollIntoView({ behavior: "smooth" }); input.focus({ preventScroll: true }); });
 $("#view-all").addEventListener("click", (event) => { const showingAll = event.currentTarget.dataset.all === "true"; renderFindings(lastFindings, !showingAll); event.currentTarget.dataset.all = String(!showingAll); event.currentTarget.innerHTML = showingAll ? 'View all <span>→</span>' : 'Show less <span>↑</span>'; });
