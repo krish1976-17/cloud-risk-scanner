@@ -25,6 +25,16 @@ const rules = [
 const weights = { Critical: 25, High: 15, Medium: 8, Low: 3 };
 let lastFindings = [];
 
+function saveFixAssistantContext(findings, metadata) {
+  try {
+    sessionStorage.setItem("cloudguard_latest_scan_v1", JSON.stringify({
+      ...metadata,
+      scannedAt: new Date().toISOString(),
+      findings
+    }));
+  } catch { /* The current dashboard still works if session storage is unavailable. */ }
+}
+
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 }
@@ -110,6 +120,7 @@ function runScan(resources) {
   if (validationError) throw new Error(validationError);
   $("#scan-feedback").classList.remove("error");
   const findings = scanResources(resources);
+  saveFixAssistantContext(findings, { mode: "Cloud config JSON", resourceCount: resources.length });
   renderDashboard(resources, findings);
   $("#scan-feedback").textContent = `Scan complete · ${resources.length} resources checked`;
   $("#scan-feedback").classList.add("visible");
@@ -161,6 +172,7 @@ $("#web-scan-button").addEventListener("click", async () => {
     const response = await fetch(`${scannerApiBase}/api/scan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: target }) });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "Scan request failed.");
+    saveFixAssistantContext(result.findings, { mode: "Website", target, pagesScanned: result.pagesScanned });
     renderDashboard(result.pages.map((page) => ({ type: "web page", name: new URL(page.url).pathname || "/" })), result.findings);
     webStatus.textContent = `Completed: ${result.pagesScanned} page${result.pagesScanned === 1 ? "" : "s"} inspected. ${result.mode}.`;
     $("#page-list").replaceChildren(...result.pages.map((page) => {
