@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1020">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
   <meta name="description" content="CloudGuard is a browser-based cloud configuration risk scanner for learning. Review JSON snapshots for public access, encryption, MFA, logging, and more.">
   <link rel="canonical" href="https://krish1976-17.github.io/cloud-risk-scanner/">
   <meta property="og:type" content="website">
@@ -15,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=priority-copy-all-1">
+  <link rel="stylesheet" href="styles.css?v=public-app-1">
 </head>
 <body>
   <div class="app-shell">
@@ -33,7 +35,7 @@
       <div class="sidebar-bottom"><div class="scan-status"><span class="pulse"></span><span><small>SCANNER STATUS</small><strong>Ready to scan</strong></span></div><div class="profile"><div class="avatar">CG</div><span><strong>CloudGuard</strong><small>Student edition</small></span><span class="more">···</span></div></div>
     </aside>
     <main id="top">
-      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <b>Security overview</b></div><div class="top-actions"><span class="local-pill"><i></i> Passive scanner</span><a class="icon-button help-link" href="guide.html" aria-label="How to use CloudGuard" title="How to use CloudGuard">?</a></div></header>
+      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <b>Security overview</b></div><div class="top-actions"><span class="local-pill"><i></i> Passive scanner</span><button class="secondary-button install-app" id="install-app" type="button" hidden>Install app</button><a class="icon-button help-link" href="guide.html" aria-label="How to use CloudGuard" title="How to use CloudGuard">?</a></div></header>
       <section class="content" id="dashboard">
         <div class="intro"><div><div class="eyebrow"><span class="eyebrow-line"></span> CLOUD SECURITY POSTURE</div><h1>See your cloud <span>clearly.</span></h1><p class="subtitle">Spot risky configuration patterns before they become incidents.</p></div><div class="intro-actions"><button class="secondary-button" id="run-demo">▶ Try sample scan</button><button class="primary-button" id="top-scan"><span>＋</span> New scan</button></div></div>
         <div class="notice" id="notice"><span class="notice-icon">i</span><span><strong>Learning project · sample data</strong> Cloud JSON is analyzed in this browser and is not uploaded. Web scans send the URL to CloudGuard's scanner service, which makes limited, read-only requests to public websites.</span><button id="dismiss-notice" aria-label="Dismiss notice">×</button></div>
@@ -56,7 +58,7 @@
   "public_access": false,
   "encryption_enabled": true,
   "logging_enabled": true
-}]</pre></details><div id="webscan-pane" class="webscan-pane" hidden><div class="webscan-form"><label for="target-url">APPLICATION URL</label><div class="url-row"><input id="target-url" type="url" placeholder="https://your-app.example" autocomplete="url"><button class="primary-button" id="web-scan-button"><span>⌕</span> Scan application</button></div><p>Enter an application you own or are authorized to assess. CloudGuard makes read-only GET requests and follows same-site links (up to 12 pages).</p><div class="webscan-status" id="webscan-status" aria-live="polite"></div></div><div class="webscan-note"><span class="scan-aside-icon">⌁</span><strong>Passive checks only</strong><span>Checks HTTPS, response headers, cookies, forms, mixed content, and common exposure signals. No login, payloads, or changes.</span></div><div id="page-list" class="page-list"></div></div>
+}]</pre></details><div id="webscan-pane" class="webscan-pane" hidden><div class="webscan-form"><label for="target-url">APPLICATION URL</label><div class="url-row"><input id="target-url" type="url" placeholder="https://your-app.example" autocomplete="url"><button class="primary-button" id="web-scan-button"><span>⌕</span> Scan application</button></div><p>Enter an application you own or are authorized to assess. CloudGuard makes limited read-only GET requests and follows same-site links (up to 12 pages).<br><label class="scan-consent"><input id="scan-consent" type="checkbox"> I have permission to scan this application and understand its URL is sent to CloudGuard's scanner service.</label></p><div class="webscan-status" id="webscan-status" aria-live="polite"></div></div><div class="webscan-note"><span class="scan-aside-icon">⌁</span><strong>Passive checks only</strong><span>Checks HTTPS, response headers, cookies, forms, mixed content, and common exposure signals. No login, payloads, or changes.</span></div><div id="page-list" class="page-list"></div></div>
         </section>
         <footer><span>CloudGuard <span class="footer-sep">·</span> Cloud Misconfiguration Detection &amp; Risk Scanner</span><span>Built for learning <span class="footer-sep">·</span> Passive website scanner</span></footer>
       </section>
@@ -64,7 +66,7 @@
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="config-validation.js" defer></script>
-  <script src="app.js?v=priority-copy-all-1" defer></script>
+  <script src="app.js?v=public-app-1" defer></script>
 </body>
 </html>
 

@@ -265,11 +265,24 @@ class Handler(SimpleHTTPRequestHandler):
         if origin not in allowed_origins:
             self.send_error(403, "This page is not allowed to use the scanner."); return
         try:
-            client_ip = self.headers.get("CF-Connecting-IP", self.headers.get("X-Forwarded-For", self.client_address[0]).split(",", 1)[0]).strip()
+            # Render's Cloudflare edge overwrites CF-Connecting-IP. Never trust
+            # X-Forwarded-For here: callers can supply a spoofed leftmost value.
+            forwarded_ip = self.headers.get("CF-Connecting-IP", "").strip()
+            try:
+                client_ip = str(ipaddress.ip_address(forwarded_ip)) if forwarded_ip else self.client_address[0]
+            except ValueError:
+                client_ip = self.client_address[0]
             now = time.monotonic()
             with _scan_times_lock:
-                if len(_scan_times) > 1000:
-                    _scan_times.clear()
+                for address, stamps in list(_scan_times.items()):
+                    active = [stamp for stamp in stamps if now - stamp < RATE_LIMIT_WINDOW]
+                    if active:
+                        _scan_times[address] = active
+                    else:
+                        _scan_times.pop(address, None)
+                if len(_scan_times) >= 5000 and client_ip not in _scan_times:
+                    self._send_json(429, {"error": "Scanner is busy. Please try again later."})
+                    return
                 recent = [stamp for stamp in _scan_times.get(client_ip, []) if now - stamp < RATE_LIMIT_WINDOW]
                 if len(recent) >= RATE_LIMIT_SCANS:
                     self._send_json(429, {"error": "Scan limit reached. Wait a minute and try again."})
@@ -285,7 +298,8 @@ class Handler(SimpleHTTPRequestHandler):
         except ValueError as error:
             self._send_json(400, {"error": str(error)})
         except Exception as error:
-            self._send_json(502, {"error": f"Scan failed: {str(error)[:200]}"})
+            print(f"[CloudGuard] Scan failed: {type(error).__name__}: {error}")
+            self._send_json(502, {"error": "The scan could not be completed. Check the URL and try again."})
     def do_GET(self):
         if self.path == "/api/health":
             self._send_json(200, {"status": "ok", "service": "CloudGuard passive scanner"})

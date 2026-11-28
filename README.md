@@ -11,7 +11,11 @@ CloudGuard is an internship learning project with two scan modes:
 
 The GitHub Pages dashboard sends web scan requests to the companion Python service. To run both parts as one hosted application, create a Render Blueprint from this repository; Render reads the included `render.yaml` file and deploys the Python service. The service also serves the dashboard at [cloud-risk-scanner-api.onrender.com](https://cloud-risk-scanner-api.onrender.com). GitHub Pages uses that address as its API; if Render assigns a different service URL, update `scannerApiBase` in `app.js` to that address and publish the change. See [Render's Blueprint deployment guide](https://render.com/docs/infrastructure-as-code) for the setup flow.
 
-The web scanner accepts public HTTP and HTTPS sites on standard ports only. It makes ordinary GET requests, follows same-origin redirects, and does not log in, submit forms, send attack payloads, or change the target. It limits each scan to 12 pages, 1 MB per response, and a six second timeout; it allows up to five scans per client in a minute. Private, reserved, and link-local network addresses are blocked, and DNS is pinned to validated public IPs. Scan only sites you own or are authorized to assess. This learning project is not a penetration test or a production security service.
+The web scanner accepts public HTTP and HTTPS sites on standard ports only. It makes ordinary GET requests, follows same-origin redirects, and does not log in, submit forms, send attack payloads, or change the target. It limits each scan to 12 pages, 1 MB per response, and a six second timeout; it allows up to five scans per client in a minute. Private, reserved, and link-local network addresses are blocked, and DNS is pinned to validated public IPs. Before a web scan, the user must confirm they own or have permission to assess the target. Scan only sites you own or are authorized to assess.
+
+CloudGuard can be installed from supported browsers as a progressive web app. Its dashboard shell can load from the browser cache when offline; website scans still require the online scanner service. Scan requests and reports are not cached by the service worker.
+
+**Public-use status:** this remains an educational prototype, not a production security service. Its web API is anonymous and its rate limit is stored in process memory; origin checks and the consent box do not authenticate users. Before inviting unrestricted public traffic, add a durable shared rate limiter, abuse controls such as a challenge or accounts, monitoring and an incident contact, and run a professional security review. The Render deployment currently uses Python's built-in HTTP server, which Python documents as unsuitable for production. Do not submit secrets or sensitive configuration files; cloud JSON analysis runs in the browser, but the app does not guarantee complete privacy or security.
 
 ## Run locally
 
@@ -69,6 +73,7 @@ node --test tests/test_config_validation.js
 - `index.html`, `guide.html`, `fixes.html`, `styles.css`, `app.js`, `fix-assistant.js`, `config-validation.js` — the dashboard, guide, session-based fix assistant, browser interaction, and cloud JSON validation.
 - `server.py` — dashboard server and passive web scan endpoint.
 - `render.yaml` — hosted backend deployment settings.
+- `manifest.webmanifest`, `service-worker.js`, `icon.svg` — installable app metadata, offline dashboard shell, and app icon.
 - `tests/` — backend URL/network-safety tests and cloud JSON validation tests.
 - `README.md` — setup and usage guide.
 - `LICENSE` — MIT License.

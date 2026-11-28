@@ -17,3 +17,4 @@ button:focus-visible,a:focus-visible,summary:focus-visible,label:focus-visible,i
 @media(max-width:700px){.intro-actions{justify-content:flex-start}.intro-actions button{font-size:9px}}
 .finding-copy .copy-finding{margin-top:7px}.copy-finding-status{display:inline-block;margin-left:8px;color:var(--green);font-size:9px}
 .findings-copy-all{display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #222e43}.findings-copy-all span{color:var(--green);font-size:9px}
+.scan-consent{display:flex;align-items:flex-start;gap:7px;margin-top:8px;color:#a8b5c7;font-size:9px;line-height:1.5}.scan-consent input{margin:2px 0 0;accent-color:#67ddc7}.install-app{font-size:9px;padding:6px 9px}

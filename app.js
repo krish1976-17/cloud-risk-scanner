@@ -99,6 +99,24 @@ $("#findings-list").addEventListener("click", async (event) => {
   }
 });
 
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(() => {}));
+}
+
+let installPrompt = null;
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  installPrompt = event;
+  $("#install-app").hidden = false;
+});
+$("#install-app").addEventListener("click", async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  $("#install-app").hidden = true;
+});
+
 $("#copy-all-findings").addEventListener("click", async () => {
   const text = lastFindings.map((finding) => [
     `${finding.severity}: ${finding.title}`,
@@ -280,6 +298,7 @@ $("#web-scan-button").addEventListener("click", async () => {
   const target = $("#target-url").value.trim();
   webStatus.classList.remove("error");
   if (!target) { webStatus.textContent = "Enter your application's full URL first."; webStatus.classList.add("error"); return; }
+  if (!$("#scan-consent").checked) { webStatus.textContent = "Confirm that you are authorized to scan this application."; webStatus.classList.add("error"); return; }
   webStatus.textContent = "Scanning pages with read-only requests…";
   $("#web-scan-button").disabled = true;
   try {
